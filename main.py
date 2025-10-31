@@ -1,5 +1,29 @@
+import json
+
 tasks = []
 completed_tasks = []
+STORAGE_FILE = "tasks.json"
+
+def load_tasks():
+    try:
+        with open(STORAGE_FILE, "r") as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        return
+    except json.JSONDecodeError:
+        return
+    
+    tasks[:] = data.get("pending", [])
+    completed_tasks[:] = data.get("completed", [])
+    
+def save_tasks():
+    data = {
+        "pending": tasks,
+        "completed": completed_tasks,
+    }
+    with open(STORAGE_FILE, "w") as file:
+        json.dump(data, file, indent=2)
+    
 
 # created function for menu to simplify main while loop
 def print_menu():
@@ -19,6 +43,7 @@ def add_task(task: str) -> None:
     cleaned = task.strip() #strips spaces and stores cleaned string
     if cleaned: #checks if string is empty or not
         tasks.append(cleaned)
+        save_tasks()
         print(f'\n"{cleaned}" added to your list.\n')
     else:
         print("\nTask cannot be empty.\n")
@@ -52,6 +77,7 @@ def complete_task(task: str) -> None:
     if cleaned in tasks:
         completed_tasks.append(cleaned)
         tasks.remove(cleaned)
+        save_tasks()
         print(f'\n"{cleaned}" marked complete.\n')
     else:
         print("\nThis task is not present.\n")
@@ -100,4 +126,5 @@ def run_cli() -> None:
 
 
 if __name__ == "__main__":
+    load_tasks()
     run_cli()
